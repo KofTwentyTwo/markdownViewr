@@ -44,6 +44,23 @@ struct MarkdownViewrApp: App {
                 .keyboardShortcut("g", modifiers: [.command, .shift])
             }
 
+            CommandGroup(replacing: .toolbar) {
+                Button("Zoom In") {
+                    themeManager.zoomIn()
+                }
+                .keyboardShortcut("+", modifiers: .command)
+
+                Button("Zoom Out") {
+                    themeManager.zoomOut()
+                }
+                .keyboardShortcut("-", modifiers: .command)
+
+                Button("Actual Size") {
+                    themeManager.zoomReset()
+                }
+                .keyboardShortcut("0", modifiers: .command)
+            }
+
             CommandMenu("Theme") {
                 Button("Next Theme") {
                     themeManager.cycleTheme(direction: 1)

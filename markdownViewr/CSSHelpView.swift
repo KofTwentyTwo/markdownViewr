@@ -46,6 +46,7 @@ struct CSSHelpView: View {
                 var(--base-font-size)
                 var(--h1-size) .. var(--h6-size)
                 var(--code-font-size)  var(--line-height)
+                var(--zoom)
                 """)
             }
 

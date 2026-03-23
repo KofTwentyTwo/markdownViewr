@@ -13,6 +13,11 @@ class ThemeManager: ObservableObject {
             UserDefaults.standard.set(globalCSS, forKey: "globalCSS")
         }
     }
+    @Published var zoomScale: Double {
+        didSet {
+            UserDefaults.standard.set(zoomScale, forKey: "zoomScale")
+        }
+    }
     @Published var frontmatterMode: MarkdownDocument.FrontmatterMode {
         didSet {
             UserDefaults.standard.set(frontmatterMode.rawValue, forKey: "frontmatterMode")
@@ -28,6 +33,8 @@ class ThemeManager: ObservableObject {
     init() {
         self.activeThemeName = UserDefaults.standard.string(forKey: "activeTheme") ?? "Catppuccin Mocha"
         self.globalCSS = UserDefaults.standard.string(forKey: "globalCSS") ?? ""
+        let savedZoom = UserDefaults.standard.double(forKey: "zoomScale")
+        self.zoomScale = savedZoom > 0 ? savedZoom : 1.0
         let modeRaw = UserDefaults.standard.string(forKey: "frontmatterMode") ?? "Hide"
         self.frontmatterMode = MarkdownDocument.FrontmatterMode(rawValue: modeRaw) ?? .hide
         loadThemes()
@@ -175,6 +182,18 @@ class ThemeManager: ObservableObject {
         loadThemes()
     }
 
+    func zoomIn() {
+        zoomScale = min(zoomScale * 1.1, 5.0)
+    }
+
+    func zoomOut() {
+        zoomScale = max(zoomScale / 1.1, 0.3)
+    }
+
+    func zoomReset() {
+        zoomScale = 1.0
+    }
+
     func cycleTheme(direction: Int) {
         guard !themes.isEmpty else { return }
         let currentIndex = themes.firstIndex { $0.name == activeThemeName } ?? 0
@@ -221,6 +240,8 @@ class ThemeManager: ObservableObject {
 
         let codeFont = "'\(theme.fonts.code)', 'SF Mono', 'Menlo', 'Monaco', monospace"
 
+        let z = zoomScale
+
         var css = """
         :root {
             --bg: \(theme.colors.background);
@@ -239,15 +260,16 @@ class ThemeManager: ObservableObject {
             --body-font: \(bodyFont);
             --heading-font: \(headingFont);
             --code-font: \(codeFont);
-            --base-font-size: \(theme.sizes.baseFontSize)px;
-            --h1-size: \(theme.sizes.h1Size)px;
-            --h2-size: \(theme.sizes.h2Size)px;
-            --h3-size: \(theme.sizes.h3Size)px;
-            --h4-size: \(theme.sizes.h4Size)px;
-            --h5-size: \(theme.sizes.h5Size)px;
-            --h6-size: \(theme.sizes.h6Size)px;
-            --code-font-size: \(theme.sizes.codeFontSize)px;
+            --base-font-size: \(theme.sizes.baseFontSize * z)px;
+            --h1-size: \(theme.sizes.h1Size * z)px;
+            --h2-size: \(theme.sizes.h2Size * z)px;
+            --h3-size: \(theme.sizes.h3Size * z)px;
+            --h4-size: \(theme.sizes.h4Size * z)px;
+            --h5-size: \(theme.sizes.h5Size * z)px;
+            --h6-size: \(theme.sizes.h6Size * z)px;
+            --code-font-size: \(theme.sizes.codeFontSize * z)px;
             --line-height: \(theme.sizes.lineHeight);
+            --zoom: \(z);
         }
         """
 

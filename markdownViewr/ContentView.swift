@@ -80,6 +80,7 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
+                zoomControls
                 palettePicker
                 editorButton
             }
@@ -91,6 +92,32 @@ struct ContentView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("\"\(missingEditorName)\" could not be found. It may have been moved or uninstalled.")
+        }
+    }
+
+    private var zoomControls: some View {
+        HStack(spacing: 2) {
+            Button {
+                themeManager.zoomOut()
+            } label: {
+                Image(systemName: "minus.magnifyingglass")
+            }
+            .help("Zoom Out")
+
+            Text("\(Int(themeManager.zoomScale * 100))%")
+                .font(.system(size: 11).monospacedDigit())
+                .frame(width: 38)
+                .onTapGesture {
+                    themeManager.zoomReset()
+                }
+                .help("Reset Zoom")
+
+            Button {
+                themeManager.zoomIn()
+            } label: {
+                Image(systemName: "plus.magnifyingglass")
+            }
+            .help("Zoom In")
         }
     }
 
