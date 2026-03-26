@@ -7,6 +7,8 @@ struct MarkdownWebView: NSViewRepresentable {
     let themeCSS: String
     var fileURL: URL?
     var findBar: FindBarController?
+    var tocVisible: Bool = false
+    var tocDepth: Int = 3
 
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -34,6 +36,15 @@ struct MarkdownWebView: NSViewRepresentable {
         } else if context.coordinator.lastCSS != themeCSS {
             context.coordinator.lastCSS = themeCSS
             injectCSS(in: webView)
+        }
+
+        if context.coordinator.lastTocVisible != tocVisible {
+            context.coordinator.lastTocVisible = tocVisible
+            webView.evaluateJavaScript("setTOCVisible(\(tocVisible))") { _, _ in }
+        }
+        if context.coordinator.lastTocDepth != tocDepth {
+            context.coordinator.lastTocDepth = tocDepth
+            webView.evaluateJavaScript("setTOCDepth(\(tocDepth))") { _, _ in }
         }
     }
 
@@ -76,6 +87,10 @@ struct MarkdownWebView: NSViewRepresentable {
         } else {
             webView.loadHTMLString(template, baseURL: nil)
         }
+
+        // Queue TOC state to apply after page loads
+        context.coordinator.pendingTocVisible = tocVisible
+        context.coordinator.pendingTocDepth = tocDepth
     }
 
     private func updateContent(in webView: WKWebView) {
@@ -107,6 +122,10 @@ struct MarkdownWebView: NSViewRepresentable {
         var webView: WKWebView?
         var lastHTML: String = ""
         var lastCSS: String = ""
+        var lastTocVisible: Bool = false
+        var lastTocDepth: Int = 3
+        var pendingTocVisible: Bool?
+        var pendingTocDepth: Int?
         var tempFileURL: URL?
         private var findBarObservation: Any?
         private var lastSearchText: String = ""
@@ -197,6 +216,19 @@ struct MarkdownWebView: NSViewRepresentable {
                 decisionHandler(.cancel)
             } else {
                 decisionHandler(.allow)
+            }
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            if let visible = pendingTocVisible {
+                lastTocVisible = visible
+                webView.evaluateJavaScript("setTOCVisible(\(visible))") { _, _ in }
+                pendingTocVisible = nil
+            }
+            if let depth = pendingTocDepth {
+                lastTocDepth = depth
+                webView.evaluateJavaScript("setTOCDepth(\(depth))") { _, _ in }
+                pendingTocDepth = nil
             }
         }
     }

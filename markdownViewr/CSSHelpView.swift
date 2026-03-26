@@ -15,6 +15,8 @@ struct CSSHelpView: View {
                     div.frontmatter > table > tr
                       > td.fm-key, td.fm-value
                     h1, h2, h3, h4, h5, h6
+                      > span.collapse-arrow
+                    h1.collapsed, h2.collapsed, ...
                     p, ul, ol, blockquote, hr
                     pre > code
                     table > thead/tbody > tr > th/td

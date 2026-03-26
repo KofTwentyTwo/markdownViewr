@@ -29,6 +29,8 @@ struct ContentView: View {
     @StateObject private var liveContent = LiveContent()
     @StateObject private var findBar = FindBarController()
     @State private var renderedHTML = ""
+    @State private var tocVisible = false
+    @State private var tocDepth = 3
 
     private var currentMarkdown: String {
         liveContent.rawMarkdown.isEmpty ? document.rawMarkdown : liveContent.rawMarkdown
@@ -47,7 +49,9 @@ struct ContentView: View {
                 html: renderedHTML,
                 themeCSS: themeManager.generateCSS(for: themeManager.activeTheme),
                 fileURL: fileURL,
-                findBar: findBar
+                findBar: findBar,
+                tocVisible: tocVisible,
+                tocDepth: tocDepth
             )
         }
         .onReceive(themeManager.$frontmatterMode) { _ in
@@ -80,6 +84,7 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .automatic) {
+                tocControls
                 zoomControls
                 palettePicker
                 editorButton
@@ -92,6 +97,29 @@ struct ContentView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("\"\(missingEditorName)\" could not be found. It may have been moved or uninstalled.")
+        }
+    }
+
+    private var tocControls: some View {
+        HStack(spacing: 2) {
+            Button {
+                tocVisible.toggle()
+            } label: {
+                Image(systemName: tocVisible ? "list.bullet.circle.fill" : "list.bullet.circle")
+            }
+            .help(tocVisible ? "Hide Table of Contents" : "Show Table of Contents")
+
+            Picker("", selection: $tocDepth) {
+                Text("H1").tag(1)
+                Text("H2").tag(2)
+                Text("H3").tag(3)
+                Text("H4").tag(4)
+                Text("H5").tag(5)
+                Text("H6").tag(6)
+            }
+            .frame(width: 60)
+            .disabled(!tocVisible)
+            .help("Table of Contents depth")
         }
     }
 

@@ -11,17 +11,104 @@
     box-sizing: border-box;
 }
 
+html {
+    height: 100%;
+}
+
 body {
     background: var(--bg);
     color: var(--text);
     font-family: var(--body-font);
     font-size: var(--base-font-size);
     line-height: var(--line-height);
-    padding: 32px 48px;
+    padding: 0;
     -webkit-font-smoothing: antialiased;
+    display: flex;
+    align-items: flex-start;
+    min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 { font-family: var(--heading-font); font-weight: 600; }
+#toc {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    width: 220px;
+    min-width: 220px;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 24px 12px 24px 16px;
+    border-right: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+    font-size: 1em;
+    display: none;
+}
+
+#toc.visible {
+    display: block;
+}
+
+#toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#toc li {
+    margin-bottom: 6px;
+}
+
+#toc a {
+    color: var(--text);
+    opacity: 0.65;
+    text-decoration: none;
+    display: block;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1.3;
+}
+
+#toc a:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+
+#toc a.active {
+    opacity: 1;
+    color: var(--link);
+    font-weight: 600;
+}
+
+#toc .toc-h2 { padding-left: 18px; }
+#toc .toc-h3 { padding-left: 36px; }
+#toc .toc-h4 { padding-left: 54px; }
+#toc .toc-h5 { padding-left: 72px; }
+#toc .toc-h6 { padding-left: 90px; }
+
+#content {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    padding: 32px 48px;
+}
+
+h1, h2, h3, h4, h5, h6 { font-family: var(--heading-font); font-weight: 600; cursor: pointer; user-select: none; scroll-margin-top: 1rem; }
+h1 .collapse-arrow, h2 .collapse-arrow, h3 .collapse-arrow,
+h4 .collapse-arrow, h5 .collapse-arrow, h6 .collapse-arrow {
+    display: inline-block;
+    width: 0.6em;
+    font-size: 0.6em;
+    margin-right: 10px;
+    transition: transform 0.15s ease;
+    opacity: 0.4;
+    vertical-align: middle;
+}
+h1:hover .collapse-arrow, h2:hover .collapse-arrow, h3:hover .collapse-arrow,
+h4:hover .collapse-arrow, h5:hover .collapse-arrow, h6:hover .collapse-arrow {
+    opacity: 0.8;
+}
+h1.collapsed .collapse-arrow, h2.collapsed .collapse-arrow, h3.collapsed .collapse-arrow,
+h4.collapsed .collapse-arrow, h5.collapsed .collapse-arrow, h6.collapsed .collapse-arrow {
+    transform: rotate(-90deg);
+}
 h1 { color: var(--h1); font-size: var(--h1-size); margin: 24px 0 16px 0; padding-bottom: 8px; border-bottom: 1px solid color-mix(in srgb, var(--text) 20%, transparent); }
 h2 { color: var(--h2); font-size: var(--h2-size); margin: 20px 0 12px 0; padding-bottom: 6px; border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent); }
 h3 { color: var(--h3); font-size: var(--h3-size); margin: 18px 0 10px 0; }
@@ -169,6 +256,7 @@ del {
 </style>
 </head>
 <body>
+<nav id="toc"></nav>
 <div id="content">
 {{CONTENT}}
 </div>
@@ -183,6 +271,8 @@ function updateContent(html) {
     document.getElementById('content').innerHTML = html;
     var newMax = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     document.documentElement.scrollTop = scrollRatio * newMax;
+    setupCollapsibleHeadings();
+    if (_tocVisible) buildTOC();
 }
 
 var _findMatches = [];
@@ -272,6 +362,156 @@ function clearFind() {
     _findMatches = [];
     _findIndex = -1;
 }
+
+function headingLevel(el) {
+    var m = el.tagName.match(/^H(\d)$/i);
+    return m ? parseInt(m[1]) : 0;
+}
+
+function setupCollapsibleHeadings() {
+    var content = document.getElementById('content');
+    var headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    for (var i = 0; i < headings.length; i++) {
+        var h = headings[i];
+        if (h.querySelector('.collapse-arrow')) continue;
+        var arrow = document.createElement('span');
+        arrow.className = 'collapse-arrow';
+        arrow.textContent = '▼';
+        h.insertBefore(arrow, h.firstChild);
+        h.addEventListener('click', toggleCollapse);
+    }
+}
+
+function toggleCollapse(e) {
+    var h = e.currentTarget;
+    var level = headingLevel(h);
+    var collapsed = h.classList.toggle('collapsed');
+    var sibling = h.nextElementSibling;
+    // When expanding, track whether we're inside a child heading that's still collapsed
+    var hiddenByChildLevel = 0;
+    while (sibling) {
+        var sibLevel = headingLevel(sibling);
+        // Stop at same-or-higher level heading
+        if (sibLevel > 0 && sibLevel <= level) break;
+
+        if (collapsed) {
+            sibling.style.display = 'none';
+        } else {
+            // Expanding: check if a child heading is still collapsed
+            if (sibLevel > 0) {
+                // This is a sub-heading — always show it
+                sibling.style.display = '';
+                // But if it's collapsed, hide its contents
+                if (sibling.classList.contains('collapsed')) {
+                    hiddenByChildLevel = sibLevel;
+                } else {
+                    // Not collapsed, and not inside another collapsed section
+                    if (hiddenByChildLevel > 0 && sibLevel <= hiddenByChildLevel) {
+                        hiddenByChildLevel = 0;
+                    }
+                }
+            } else {
+                // Non-heading content: show only if not hidden by a collapsed child
+                sibling.style.display = hiddenByChildLevel > 0 ? 'none' : '';
+            }
+        }
+        sibling = sibling.nextElementSibling;
+    }
+}
+
+var _tocMaxDepth = 3;
+var _tocVisible = false;
+
+function buildTOC() {
+    var toc = document.getElementById('toc');
+    var content = document.getElementById('content');
+    var headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    var ul = document.createElement('ul');
+
+    for (var i = 0; i < headings.length; i++) {
+        var h = headings[i];
+        var level = headingLevel(h);
+        if (level > _tocMaxDepth || level === 0) continue;
+
+        // Ensure heading has an id for linking
+        if (!h.id) {
+            var text = h.textContent.replace(/^▼\s*/, '').trim();
+            h.id = 'heading-' + i;
+        }
+
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.href = '#' + h.id;
+        a.className = 'toc-h' + level;
+        var headingText = h.textContent.replace(/^▼\s*/, '').trim();
+        a.textContent = headingText;
+        a.title = headingText;
+        a.dataset.headingId = h.id;
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = document.getElementById(this.dataset.headingId);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        li.appendChild(a);
+        ul.appendChild(li);
+    }
+
+    toc.innerHTML = '';
+    toc.appendChild(ul);
+    if (_tocVisible) toc.classList.add('visible');
+}
+
+function setTOCVisible(visible) {
+    _tocVisible = visible;
+    var toc = document.getElementById('toc');
+    if (visible) {
+        toc.classList.add('visible');
+        buildTOC();
+        setupTOCScrollHighlight();
+    } else {
+        toc.classList.remove('visible');
+    }
+}
+
+function setTOCDepth(depth) {
+    _tocMaxDepth = depth;
+    if (_tocVisible) buildTOC();
+}
+
+function setupTOCScrollHighlight() {
+    // Debounced scroll handler to highlight active TOC entry
+    var timeout;
+    window.addEventListener('scroll', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(highlightActiveTOC, 50);
+    });
+}
+
+function highlightActiveTOC() {
+    var toc = document.getElementById('toc');
+    if (!toc.classList.contains('visible')) return;
+
+    var links = toc.querySelectorAll('a');
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    var activeLink = null;
+
+    for (var i = 0; i < links.length; i++) {
+        var target = document.getElementById(links[i].dataset.headingId);
+        if (target && target.offsetTop <= scrollTop + 60) {
+            activeLink = links[i];
+        }
+        links[i].classList.remove('active');
+    }
+    if (activeLink) activeLink.classList.add('active');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupCollapsibleHeadings();
+    if (_tocVisible) {
+        buildTOC();
+        setupTOCScrollHighlight();
+    }
+});
 </script>
 </body>
 </html>
