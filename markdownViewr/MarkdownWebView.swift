@@ -14,6 +14,10 @@ struct MarkdownWebView: NSViewRepresentable {
         let config = WKWebViewConfiguration()
         config.preferences.setValue(true, forKey: "developerExtrasEnabled")
 
+        let userContent = WKUserContentController()
+        userContent.add(context.coordinator, name: "vim")
+        config.userContentController = userContent
+
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.setValue(false, forKey: "drawsBackground")
         webView.navigationDelegate = context.coordinator
@@ -118,7 +122,7 @@ struct MarkdownWebView: NSViewRepresentable {
         }
     }
 
-    class Coordinator: NSObject, WKNavigationDelegate {
+    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var webView: WKWebView?
         var lastHTML: String = ""
         var lastCSS: String = ""
@@ -216,6 +220,22 @@ struct MarkdownWebView: NSViewRepresentable {
                 decisionHandler(.cancel)
             } else {
                 decisionHandler(.allow)
+            }
+        }
+
+        func userContentController(
+            _ userContentController: WKUserContentController,
+            didReceive message: WKScriptMessage
+        ) {
+            guard message.name == "vim", let action = message.body as? String else { return }
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                switch action {
+                case "focusFind": self.findBar?.show()
+                case "findNext": self.findNext()
+                case "findPrev": self.findPrevious()
+                default: break
+                }
             }
         }
 

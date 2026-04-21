@@ -512,6 +512,135 @@ document.addEventListener('DOMContentLoaded', function() {
         setupTOCScrollHighlight();
     }
 });
+
+var _vimPending = null;
+var _vimTimeout = null;
+
+function _vimLineHeight() {
+    var cs = getComputedStyle(document.body);
+    var lh = parseFloat(cs.lineHeight);
+    if (!isFinite(lh)) lh = parseFloat(cs.fontSize) * 1.5;
+    return lh;
+}
+
+function _vimClearPending() {
+    _vimPending = null;
+    if (_vimTimeout) { clearTimeout(_vimTimeout); _vimTimeout = null; }
+}
+
+function _vimSetPending(key) {
+    _vimPending = key;
+    if (_vimTimeout) clearTimeout(_vimTimeout);
+    _vimTimeout = setTimeout(_vimClearPending, 500);
+}
+
+function _vimJumpHeading(dir) {
+    var all = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    var visible = [];
+    for (var i = 0; i < all.length; i++) {
+        if (all[i].offsetParent !== null) visible.push(all[i]);
+    }
+    var y = window.scrollY;
+    var threshold = 2;
+    var target = null;
+    if (dir > 0) {
+        for (var i = 0; i < visible.length; i++) {
+            if (visible[i].offsetTop > y + threshold) { target = visible[i]; break; }
+        }
+    } else {
+        for (var i = visible.length - 1; i >= 0; i--) {
+            if (visible[i].offsetTop < y - threshold) { target = visible[i]; break; }
+        }
+    }
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function _vimSendMessage(action) {
+    if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.vim) {
+        window.webkit.messageHandlers.vim.postMessage(action);
+    }
+}
+
+window.addEventListener('keydown', function(e) {
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+    if (e.metaKey || e.altKey) return;
+
+    var key = e.key;
+    var ctrl = e.ctrlKey;
+
+    if (_vimPending === 'g' && key === 'g' && !ctrl) {
+        _vimClearPending();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        e.preventDefault();
+        return;
+    }
+    if (_vimPending === ']' && key === ']' && !ctrl) {
+        _vimClearPending();
+        _vimJumpHeading(1);
+        e.preventDefault();
+        return;
+    }
+    if (_vimPending === '[' && key === '[' && !ctrl) {
+        _vimClearPending();
+        _vimJumpHeading(-1);
+        e.preventDefault();
+        return;
+    }
+    if (_vimPending) _vimClearPending();
+
+    if (ctrl) {
+        var vh = window.innerHeight;
+        if (key === 'd') { window.scrollBy({ top: vh / 2, behavior: 'smooth' }); e.preventDefault(); return; }
+        if (key === 'u') { window.scrollBy({ top: -vh / 2, behavior: 'smooth' }); e.preventDefault(); return; }
+        if (key === 'f') { window.scrollBy({ top: vh, behavior: 'smooth' }); e.preventDefault(); return; }
+        if (key === 'b') { window.scrollBy({ top: -vh, behavior: 'smooth' }); e.preventDefault(); return; }
+        return;
+    }
+
+    switch (key) {
+        case 'j':
+            window.scrollBy({ top: _vimLineHeight(), behavior: 'smooth' });
+            e.preventDefault();
+            break;
+        case 'k':
+            window.scrollBy({ top: -_vimLineHeight(), behavior: 'smooth' });
+            e.preventDefault();
+            break;
+        case 'G':
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+            e.preventDefault();
+            break;
+        case 'g':
+            _vimSetPending('g');
+            e.preventDefault();
+            break;
+        case ']':
+            _vimSetPending(']');
+            e.preventDefault();
+            break;
+        case '[':
+            _vimSetPending('[');
+            e.preventDefault();
+            break;
+        case 'n':
+            if (_findMatches.length > 0) _vimSendMessage('findNext');
+            e.preventDefault();
+            break;
+        case 'N':
+            if (_findMatches.length > 0) _vimSendMessage('findPrev');
+            e.preventDefault();
+            break;
+        case '/':
+            _vimSendMessage('focusFind');
+            e.preventDefault();
+            break;
+        case 'Escape':
+            clearFind();
+            e.preventDefault();
+            break;
+    }
+});
 </script>
 </body>
 </html>
