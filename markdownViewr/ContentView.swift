@@ -37,7 +37,11 @@ struct ContentView: View {
     }
 
     private func rerender() {
-        renderedHTML = MarkdownDocument.convertToHTML(currentMarkdown, frontmatterMode: themeManager.frontmatterMode)
+        renderedHTML = MarkdownDocument.convertToHTML(
+            currentMarkdown,
+            frontmatterMode: themeManager.frontmatterMode,
+            extensions: themeManager.markdownExtensions
+        )
     }
 
     var body: some View {
@@ -55,6 +59,9 @@ struct ContentView: View {
             )
         }
         .onReceive(themeManager.$frontmatterMode) { _ in
+            DispatchQueue.main.async { rerender() }
+        }
+        .onReceive(themeManager.$markdownExtensions) { _ in
             DispatchQueue.main.async { rerender() }
         }
         .onReceive(liveContent.$rawMarkdown) { _ in

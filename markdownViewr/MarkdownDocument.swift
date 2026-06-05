@@ -42,7 +42,7 @@ struct MarkdownDocument: FileDocument {
         case markdown = "Show as Markdown"
     }
 
-    static func convertToHTML(_ markdown: String, frontmatterMode: FrontmatterMode = .hide) -> String {
+    static func convertToHTML(_ markdown: String, frontmatterMode: FrontmatterMode = .hide, extensions: MarkdownExtensions = MarkdownExtensions()) -> String {
         let (frontmatter, body) = parseFrontmatter(markdown)
 
         var html = ""
@@ -62,7 +62,7 @@ struct MarkdownDocument: FileDocument {
         let document = Document(parsing: content)
         var htmlVisitor = HTMLConverter()
         html += htmlVisitor.visit(document)
-        return html
+        return applyExtensions(html, extensions: extensions)
     }
 
     private static func parseFrontmatter(_ markdown: String) -> (frontmatter: String?, body: String) {
@@ -137,6 +137,65 @@ struct MarkdownDocument: FileDocument {
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
             .replacingOccurrences(of: "\"", with: "&quot;")
+    }
+
+    private static func applyExtensions(_ html: String, extensions: MarkdownExtensions) -> String {
+        // Split on <pre...> tags (with optional attributes) so code blocks are never transformed.
+        guard let preOpenRegex = try? NSRegularExpression(pattern: "<pre(?:\\s[^>]*)?>", options: []) else {
+            return applyExtensionRegexes(html, extensions: extensions)
+        }
+
+        var result = ""
+        var searchRange = html.startIndex..<html.endIndex
+
+        while let match = preOpenRegex.firstMatch(in: html, range: NSRange(searchRange, in: html)) {
+            guard let matchRange = Range(match.range, in: html) else { break }
+
+            // Process text before this <pre...> tag
+            let before = String(html[searchRange.lowerBound..<matchRange.lowerBound])
+            result += applyExtensionRegexes(before, extensions: extensions)
+
+            // Find the matching </pre>
+            let afterOpenTag = matchRange.upperBound
+            if let closeRange = html.range(of: "</pre>", range: afterOpenTag..<html.endIndex) {
+                // Include the <pre...>content</pre> verbatim
+                result += String(html[matchRange.lowerBound..<closeRange.upperBound])
+                searchRange = closeRange.upperBound..<html.endIndex
+            } else {
+                // No closing </pre> found — pass through the rest verbatim
+                result += String(html[matchRange.lowerBound...])
+                return result
+            }
+        }
+
+        // Process any remaining text after the last </pre>
+        result += applyExtensionRegexes(String(html[searchRange]), extensions: extensions)
+        return result
+    }
+
+    private static func applyExtensionRegexes(_ text: String, extensions: MarkdownExtensions) -> String {
+        var result = text
+        if extensions.highlight {
+            result = applyRegex(result, pattern: "==(.+?)==", template: "<mark>$1</mark>")
+        }
+        if extensions.superscript {
+            result = applyRegex(result, pattern: "\\^(.+?)\\^", template: "<sup>$1</sup>")
+        }
+        if extensions.subscript_ {
+            // ~~text~~ is rendered as <del>text</del> by the parser before this runs,
+            // so there are no bare ~~ sequences left to conflict with single-~ subscript.
+            result = applyRegex(result, pattern: "~(.+?)~", template: "<sub>$1</sub>")
+        }
+        if extensions.underline {
+            result = applyRegex(result, pattern: "\\+\\+(.+?)\\+\\+", template: "<ins>$1</ins>")
+        }
+        return result
+    }
+
+    private static func applyRegex(_ text: String, pattern: String, template: String) -> String {
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return text }
+        let range = NSRange(text.startIndex..., in: text)
+        return regex.stringByReplacingMatches(in: text, range: range, withTemplate: template)
     }
 }
 
