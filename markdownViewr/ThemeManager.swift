@@ -23,6 +23,13 @@ class ThemeManager: ObservableObject {
             UserDefaults.standard.set(frontmatterMode.rawValue, forKey: "frontmatterMode")
         }
     }
+    @Published var markdownExtensions: MarkdownExtensions {
+        didSet {
+            if let data = try? JSONEncoder().encode(markdownExtensions) {
+                UserDefaults.standard.set(data, forKey: "markdownExtensions")
+            }
+        }
+    }
 
     var activeTheme: Theme {
         themes.first { $0.name == activeThemeName } ?? themes.first ?? Self.fallbackTheme
@@ -37,6 +44,12 @@ class ThemeManager: ObservableObject {
         self.zoomScale = savedZoom > 0 ? savedZoom : 1.0
         let modeRaw = UserDefaults.standard.string(forKey: "frontmatterMode") ?? "Hide"
         self.frontmatterMode = MarkdownDocument.FrontmatterMode(rawValue: modeRaw) ?? .hide
+        if let data = UserDefaults.standard.data(forKey: "markdownExtensions"),
+           let ext = try? JSONDecoder().decode(MarkdownExtensions.self, from: data) {
+            self.markdownExtensions = ext
+        } else {
+            self.markdownExtensions = MarkdownExtensions()
+        }
         loadThemes()
     }
 
@@ -299,6 +312,8 @@ class ThemeManager: ObservableObject {
             --code-text: \(theme.colors.codeText);
             --blockquote-border: \(theme.colors.blockquoteBorder);
             --blockquote-bg: \(theme.colors.blockquoteBackground);
+            --highlight-bg: \(theme.colors.highlightBackground);
+            --highlight-text: \(theme.colors.highlightText);
             --body-font: \(bodyFont);
             --heading-font: \(headingFont);
             --code-font: \(codeFont);

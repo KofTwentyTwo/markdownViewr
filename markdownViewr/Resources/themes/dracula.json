@@ -13,7 +13,9 @@
         "codeBackground": "#1e1f29",
         "codeText": "#50fa7b",
         "blockquoteBorder": "#bd93f9",
-        "blockquoteBackground": "#2e3042"
+        "blockquoteBackground": "#2e3042",
+        "highlightBackground": "#f1fa8c",
+        "highlightText": "#282a36"
     },
     "fonts": {
         "body": "System",
