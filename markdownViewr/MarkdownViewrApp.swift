@@ -1,7 +1,13 @@
 import SwiftUI
+import Sparkle
 
 @main
 struct MarkdownViewrApp: App {
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
     @StateObject private var themeManager = ThemeManager()
     @StateObject private var editorManager = EditorManager()
 
@@ -17,6 +23,12 @@ struct MarkdownViewrApp: App {
         }
         .defaultSize(width: 700, height: 900)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    updaterController.checkForUpdates(nil)
+                }
+            }
+
             CommandGroup(replacing: .appSettings) {
                 Button("Settings...") {
                     SettingsWindowController.shared.show(
