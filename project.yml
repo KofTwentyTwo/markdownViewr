@@ -62,3 +62,5 @@ targets:
                 - markdown
                 - mdown
                 - mkd
+        SUFeedURL: "https://raw.githubusercontent.com/darinkelkhoff/markdownViewr/main/appcast.xml"
+        SUPublicEDKey: "LEctVSSqzdaeJUIQ3OON9C6ASx8NRYGfCikVyRlANZ8="

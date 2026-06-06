@@ -41,6 +41,10 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/darinkelkhoff/markdownViewr/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>LEctVSSqzdaeJUIQ3OON9C6ASx8NRYGfCikVyRlANZ8=</string>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>
