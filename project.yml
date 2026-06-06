@@ -10,6 +10,9 @@ packages:
   swift-markdown:
     url: https://github.com/apple/swift-markdown.git
     from: "0.4.0"
+  sparkle:
+    url: https://github.com/sparkle-project/Sparkle.git
+    from: "2.0.0"
 
 targets:
   markdownViewr:
@@ -22,6 +25,8 @@ targets:
     dependencies:
       - package: swift-markdown
         product: Markdown
+      - package: sparkle
+        product: Sparkle
     settings:
       base:
         INFOPLIST_FILE: markdownViewr/Info.plist
