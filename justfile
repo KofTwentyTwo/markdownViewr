@@ -58,5 +58,21 @@ release: kill
         --repo darinkelkhoff/markdownViewr \
         --title "markdownViewr v$VERSION" \
         --generate-notes
+    echo "==> Updating appcast..."
+    SPARKLE_BIN=$(find ~/Library/Developer/Xcode/DerivedData -path "*/artifacts/sparkle/Sparkle/bin" -type d 2>/dev/null | head -1)
+    if [[ -z "$SPARKLE_BIN" ]]; then
+        echo "Error: Sparkle tools not found in DerivedData. Run 'just build' first."
+        exit 1
+    fi
+    mkdir -p /tmp/markdownViewr-appcast-input
+    cp "$ZIP" /tmp/markdownViewr-appcast-input/
+    "$SPARKLE_BIN/generate_appcast" \
+        --download-url-prefix "https://github.com/darinkelkhoff/markdownViewr/releases/download/v$VERSION/" \
+        -o appcast.xml \
+        /tmp/markdownViewr-appcast-input/
+    echo "==> Committing and pushing appcast..."
+    git add appcast.xml
+    git commit -m "release: update appcast for v$VERSION"
+    git push
     echo ""
     echo "Done! https://github.com/darinkelkhoff/markdownViewr/releases/tag/v$VERSION"
