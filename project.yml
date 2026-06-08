@@ -31,7 +31,7 @@ targets:
       base:
         INFOPLIST_FILE: markdownViewr/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.dkelkhoff.markdownViewr
-        MARKETING_VERSION: "1.1.1"
+        MARKETING_VERSION: "1.1.2"
         CURRENT_PROJECT_VERSION: "1"
         MACOSX_DEPLOYMENT_TARGET: "13.0"
         ENABLE_APP_SANDBOX: "NO"
@@ -62,6 +62,8 @@ targets:
                 - markdown
                 - mdown
                 - mkd
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSApplicationCategoryType: "public.app-category.productivity"
         SUFeedURL: "https://raw.githubusercontent.com/darinkelkhoff/markdownViewr/main/appcast.xml"
         SUPublicEDKey: "flXZnzfoR5H/JgMTtAGza8SUcUbfK4FWUPEBjxkSZyc="
