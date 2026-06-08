@@ -62,5 +62,6 @@ targets:
                 - markdown
                 - mdown
                 - mkd
+        LSApplicationCategoryType: "public.app-category.productivity"
         SUFeedURL: "https://raw.githubusercontent.com/darinkelkhoff/markdownViewr/main/appcast.xml"
         SUPublicEDKey: "flXZnzfoR5H/JgMTtAGza8SUcUbfK4FWUPEBjxkSZyc="
