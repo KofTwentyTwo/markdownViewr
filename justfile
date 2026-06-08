@@ -30,6 +30,11 @@ release: kill
     #!/usr/bin/env bash
     set -euo pipefail
     VERSION=$(grep 'MARKETING_VERSION' project.yml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+    LATEST=$(gh release list --repo darinkelkhoff/markdownViewr --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "none")
+    if [[ "$LATEST" == "v$VERSION" ]]; then
+        echo "Error: v$VERSION is already released. Bump MARKETING_VERSION in project.yml first."
+        exit 1
+    fi
     ARCHIVE="/tmp/markdownViewr.xcarchive"
     EXPORT="/tmp/markdownViewr-export"
     ZIP="/tmp/markdownViewr-$VERSION.zip"
