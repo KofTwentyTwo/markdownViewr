@@ -57,6 +57,13 @@ struct MarkdownViewrApp: App {
                 .keyboardShortcut("g", modifiers: [.command, .shift])
             }
 
+            CommandGroup(replacing: .help) {
+                Button("markdownViewr Help") {
+                    HelpWindowController.shared.show()
+                }
+                .keyboardShortcut("?", modifiers: .command)
+            }
+
             CommandGroup(replacing: .toolbar) {
                 Button("Zoom In") {
                     themeManager.zoomIn()
@@ -105,6 +112,41 @@ struct DocumentWindowConfigurator: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {}
+}
+
+class HelpWindowController: NSObject, NSWindowDelegate {
+    static let shared = HelpWindowController()
+    private var window: NSWindow?
+
+    func show() {
+        if let window {
+            window.makeKeyAndOrderFront(nil)
+            return
+        }
+
+        let hostingView = NSHostingView(rootView: HelpView())
+        hostingView.frame = NSRect(x: 0, y: 0, width: 620, height: 540)
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 620, height: 540),
+            styleMask: [.titled, .closable, .resizable, .miniaturizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "markdownViewr Help"
+        window.contentView = hostingView
+        window.minSize = NSSize(width: 460, height: 340)
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+
+        self.window = window
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        window = nil
+    }
 }
 
 class SettingsWindowController: NSObject, NSWindowDelegate {
