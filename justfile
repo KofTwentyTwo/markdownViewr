@@ -34,6 +34,8 @@ release: kill
     MINOR=$(echo "$VERSION" | cut -d. -f2)
     PATCH=$(echo "$VERSION" | cut -d. -f3)
     BUILD_NUMBER=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+    echo "==> Regenerating Xcode project..."
+    xcodegen generate
     LATEST=$(gh release list --repo darinkelkhoff/markdownViewr --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "none")
     if [[ "$LATEST" == "v$VERSION" ]]; then
         echo "Error: v$VERSION is already released. Bump MARKETING_VERSION in project.yml first."
