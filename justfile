@@ -34,7 +34,7 @@ release: kill
     EXPORT="/tmp/markdownViewr-export"
     ZIP="/tmp/markdownViewr-$VERSION.zip"
     echo "==> Archiving v$VERSION..."
-    rm -rf "$ARCHIVE" "$EXPORT"
+    rm -rf "$ARCHIVE" "$EXPORT" "$ZIP"
     xcodebuild archive \
         -project markdownViewr.xcodeproj \
         -scheme markdownViewr \
@@ -46,13 +46,18 @@ release: kill
         -archivePath "$ARCHIVE" \
         -exportPath "$EXPORT" \
         -exportOptionsPlist ExportOptions.plist
+    APP="$EXPORT/markdownViewr.app"
+    if [[ ! -d "$APP" ]]; then
+        echo "Error: expected $APP but found: $(ls "$EXPORT")"
+        exit 1
+    fi
     echo "==> Notarizing (this takes a minute)..."
-    ditto -c -k --keepParent "$EXPORT/markdownViewr.app" "$ZIP"
+    ditto -c -k --keepParent "$APP" "$ZIP"
     xcrun notarytool submit "$ZIP" --keychain-profile "markdownViewr-notarytool" --wait
     echo "==> Stapling notarization ticket..."
-    xcrun stapler staple "$EXPORT/markdownViewr.app"
+    xcrun stapler staple "$APP"
     echo "==> Packaging final release..."
-    ditto -c -k --keepParent "$EXPORT/markdownViewr.app" "$ZIP"
+    ditto -c -k --keepParent "$APP" "$ZIP"
     echo "==> Creating GitHub release v$VERSION..."
     gh release create "v$VERSION" "$ZIP" \
         --repo darinkelkhoff/markdownViewr \
