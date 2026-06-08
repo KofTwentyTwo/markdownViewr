@@ -31,7 +31,7 @@ targets:
       base:
         INFOPLIST_FILE: markdownViewr/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.dkelkhoff.markdownViewr
-        MARKETING_VERSION: "1.1.5"
+        MARKETING_VERSION: "1.1.6"
         CURRENT_PROJECT_VERSION: "3"
         MACOSX_DEPLOYMENT_TARGET: "13.0"
         ENABLE_APP_SANDBOX: "NO"
