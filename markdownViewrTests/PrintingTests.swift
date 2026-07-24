@@ -310,6 +310,31 @@ final class PrintingTests: XCTestCase {
         XCTAssertTrue(plainScript.contains("document.getElementById('theme-css').textContent = ''"))
     }
 
+    func testPrintZoomResolver() {
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Compact (75%)", screenZoom: 1.5), 0.75)
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Small (85%)", screenZoom: 1.5), 0.85)
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Standard (100%)", screenZoom: 1.5), 1.0)
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Large (115%)", screenZoom: 1.5), 1.15)
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Match Screen", screenZoom: 1.5), 1.5)
+        XCTAssertEqual(PrintZoomResolver.zoomScale(for: "Unknown", screenZoom: 1.5), 1.0)
+    }
+
+    func testCleanPrintingThemeUsesPrintProportionalFontSizes() {
+        let sizes = Theme.cleanPrinting.sizes
+        XCTAssertLessThanOrEqual(sizes.baseFontSize, 12.0)
+        XCTAssertLessThanOrEqual(sizes.h1Size, 22.0)
+        XCTAssertLessThanOrEqual(sizes.h2Size, 18.0)
+        XCTAssertLessThanOrEqual(sizes.codeFontSize, 11.0)
+    }
+
+    func testSettingsViewIncludesExpandedFontScalingOptions() throws {
+        let settingsSource = try loadSourceFile("markdownViewr/SettingsView.swift")
+        XCTAssertTrue(settingsSource.contains(#"Text("Compact (75%)").tag("Compact (75%)")"#))
+        XCTAssertTrue(settingsSource.contains(#"Text("Small (85%)").tag("Small (85%)")"#))
+        XCTAssertTrue(settingsSource.contains(#"Text("Standard (100%)").tag("Standard (100%)")"#))
+        XCTAssertTrue(settingsSource.contains(#"Text("Large (115%)").tag("Large (115%)")"#))
+    }
+
     // 4. Functional test for PrintCoordinator script building and memory cycles
     @MainActor
     func testPrintCoordinatorMemoryManagementAndRestore() {

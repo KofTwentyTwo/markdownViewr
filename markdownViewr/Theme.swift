@@ -194,7 +194,17 @@ extension Theme {
             highlightText: "#24292e"
         ),
         fonts: ThemeFonts(body: "System", heading: "System", code: "SF Mono"),
-        sizes: ThemeSizes(),
+        sizes: ThemeSizes(
+            baseFontSize: 11,
+            h1Size: 22,
+            h2Size: 18,
+            h3Size: 15,
+            h4Size: 13.5,
+            h5Size: 12,
+            h6Size: 11,
+            codeFontSize: 10.5,
+            lineHeight: 1.5
+        ),
         customCSS: "",
         isBuiltIn: true
     )

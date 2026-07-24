@@ -581,17 +581,21 @@ struct PrintingSettingsView: View {
                 GroupBox(label: Text("Zoom & Scaling")) {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Text("Font Zoom")
+                            Text("Font Scaling")
                             Spacer()
-                            Picker("Font Zoom", selection: $printZoom) {
+                            Picker("Font Scaling", selection: $printZoom) {
+                                Text("Compact (75%)").tag("Compact (75%)")
+                                Text("Small (85%)").tag("Small (85%)")
                                 Text("Standard (100%)").tag("Standard (100%)")
+                                Text("Large (115%)").tag("Large (115%)")
+                                Divider()
                                 Text("Match Screen").tag("Match Screen")
                             }
                             .frame(width: 200)
                             .labelsHidden()
                         }
 
-                        Text("Select whether the printed document inherits the screen zoom scaling.")
+                        Text("Select the scale for printed document fonts, or match current screen zoom.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
 

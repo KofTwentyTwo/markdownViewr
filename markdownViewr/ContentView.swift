@@ -278,7 +278,7 @@ struct ContentView: View {
         }
 
         // Determine zoom scale based on print settings
-        let zoom = printZoom == "Match Screen" ? zoomScale : 1.0
+        let zoom = PrintZoomResolver.zoomScale(for: printZoom, screenZoom: zoomScale)
 
         let printCSS = themeToPrint != nil ? themeManager.generateCSS(for: themeToPrint!, zoomScale: zoom) : ""
         let escapedPrintCSS = printCSS.escapedForJavaScriptLiteral()
@@ -1227,5 +1227,24 @@ fileprivate extension String {
             .replacingOccurrences(of: "'", with: "\\'")
             .replacingOccurrences(of: "\r", with: "")
             .replacingOccurrences(of: "\n", with: "\\n")
+    }
+}
+
+enum PrintZoomResolver {
+    static func zoomScale(for printZoom: String, screenZoom: Double) -> Double {
+        switch printZoom {
+        case "Compact (75%)":
+            return 0.75
+        case "Small (85%)":
+            return 0.85
+        case "Standard (100%)":
+            return 1.0
+        case "Large (115%)":
+            return 1.15
+        case "Match Screen":
+            return screenZoom
+        default:
+            return 1.0
+        }
     }
 }
