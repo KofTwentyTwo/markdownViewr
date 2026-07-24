@@ -228,12 +228,24 @@ final class PrintingTests: XCTestCase {
         XCTAssertTrue(printBlock.contains("var(--h1-size) !important"))
         XCTAssertTrue(printBlock.contains("var(--h2-size) !important"))
         XCTAssertTrue(printBlock.contains("var(--h3-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h4-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h5-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h6-size) !important"))
 
         // Verify colors are explicitly bound in @media print
         XCTAssertTrue(printBlock.contains("var(--h1) !important"))
         XCTAssertTrue(printBlock.contains("var(--h2) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h3) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h4) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h5) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h6) !important"))
         XCTAssertTrue(printBlock.contains("var(--link) !important"))
         XCTAssertTrue(printBlock.contains("var(--code-text) !important"))
+        XCTAssertTrue(printBlock.contains("var(--code-bg) !important"))
+        XCTAssertTrue(printBlock.contains("var(--blockquote-border) !important"))
+        XCTAssertTrue(printBlock.contains("var(--blockquote-bg) !important"))
+        XCTAssertTrue(printBlock.contains("var(--highlight-bg) !important"))
+        XCTAssertTrue(printBlock.contains("var(--highlight-text) !important"))
     }
 
     func testPrintPrepareScriptForcesLayoutPass() {
