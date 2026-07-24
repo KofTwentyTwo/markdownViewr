@@ -260,6 +260,56 @@ final class PrintingTests: XCTestCase {
         XCTAssertTrue(script.contains("document.body.offsetHeight;"))
     }
 
+    @MainActor
+    func testEveryThemeOptionIsRespectedAndGeneratesValidPrintCSS() {
+        let manager = ThemeManager()
+        let themesToTest = manager.allThemes
+
+        XCTAssertFalse(themesToTest.isEmpty, "ThemeManager should load built-in themes")
+
+        for theme in themesToTest {
+            let css = manager.generateCSS(for: theme, zoomScale: 1.0)
+            XCTAssertFalse(css.isEmpty, "Theme '\(theme.name)' should generate non-empty CSS")
+            XCTAssertTrue(css.contains("--bg: \(theme.colors.background)"), "Theme '\(theme.name)' should include background color")
+            XCTAssertTrue(css.contains("--text: \(theme.colors.text)"), "Theme '\(theme.name)' should include text color")
+            XCTAssertTrue(css.contains("--h1: \(theme.colors.heading1)"), "Theme '\(theme.name)' should include h1 color")
+            XCTAssertTrue(css.contains("--link: \(theme.colors.link)"), "Theme '\(theme.name)' should include link color")
+            XCTAssertTrue(css.contains("--code-bg: \(theme.colors.codeBackground)"), "Theme '\(theme.name)' should include code bg color")
+            XCTAssertTrue(css.contains("--code-text: \(theme.colors.codeText)"), "Theme '\(theme.name)' should include code text color")
+
+            let prepareScript = PrintScriptGenerator.prepareScript(
+                escapedCSS: css.replacingOccurrences(of: "\n", with: "\\n"),
+                stripBackgrounds: false,
+                stripImages: false,
+                stripWidth: true,
+                printBorders: false,
+                pagePadding: "0px"
+            )
+            XCTAssertTrue(prepareScript.contains("document.getElementById('theme-css').textContent ="), "Script for '\(theme.name)' should target theme-css element")
+            XCTAssertTrue(prepareScript.contains(theme.colors.background), "Prepared script for '\(theme.name)' should inject background color")
+        }
+
+        // Verify Clean Printing option
+        let cleanCSS = manager.generateCSS(for: Theme.cleanPrinting, zoomScale: 1.0)
+        XCTAssertTrue(cleanCSS.contains("--bg: #ffffff"), "Clean printing should use white background")
+        XCTAssertTrue(cleanCSS.contains("--text: #24292e"), "Clean printing should use dark text")
+
+        // Verify Active Theme option
+        let activeCSS = manager.generateCSS(for: manager.activeTheme, zoomScale: 1.0)
+        XCTAssertFalse(activeCSS.isEmpty, "Active theme CSS should generate non-empty CSS")
+
+        // Verify Plain HTML option
+        let plainScript = PrintScriptGenerator.prepareScript(
+            escapedCSS: "",
+            stripBackgrounds: true,
+            stripImages: false,
+            stripWidth: true,
+            printBorders: false,
+            pagePadding: "0px"
+        )
+        XCTAssertTrue(plainScript.contains("document.getElementById('theme-css').textContent = ''"))
+    }
+
     // 4. Functional test for PrintCoordinator script building and memory cycles
     @MainActor
     func testPrintCoordinatorMemoryManagementAndRestore() {
