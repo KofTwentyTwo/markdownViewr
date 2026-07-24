@@ -272,7 +272,9 @@ struct ContentView: View {
         } else if printTheme == "Plain HTML" {
             themeToPrint = nil
         } else {
-            themeToPrint = themeManager.themes.first { $0.name == printTheme } ?? Theme.cleanPrinting
+            themeToPrint = themeManager.allThemes.first { $0.name == printTheme }
+                ?? themeManager.themes.first { $0.name == printTheme }
+                ?? Theme.cleanPrinting
         }
 
         // Determine zoom scale based on print settings
@@ -1191,6 +1193,7 @@ struct PrintScriptGenerator {
         \(fullWidthJS)
         \(bordersJS)
         \(paddingJS)
+        void document.body.offsetHeight;
         """
     }
 

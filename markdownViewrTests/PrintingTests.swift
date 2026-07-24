@@ -142,14 +142,12 @@ final class PrintingTests: XCTestCase {
         XCTAssertTrue(printBlock.contains("-webkit-print-color-adjust: exact !important"))
         XCTAssertTrue(printBlock.contains("print-color-adjust: exact !important"))
 
-        // Verify print background toggling override style exists
-        XCTAssertTrue(printBlock.contains("html.print-no-backgrounds *"))
+        // Verify print background toggling override style exists without wiping theme text colors
+        XCTAssertTrue(printBlock.contains("html.print-no-backgrounds"))
         XCTAssertTrue(printBlock.contains("print-color-adjust: economy !important"))
-        XCTAssertTrue(printBlock.contains("background: transparent !important"))
-        XCTAssertTrue(printBlock.contains("color: #000000 !important"))
+        XCTAssertFalse(printBlock.contains("color: #000000 !important"))
 
         // Verify ink-saving layout overrides for links, rules, headers, and blockquotes
-        XCTAssertTrue(printBlock.contains("html.print-no-backgrounds a"))
         XCTAssertTrue(printBlock.contains("html.print-no-backgrounds hr"))
         XCTAssertTrue(printBlock.contains("html.print-no-backgrounds blockquote"))
         XCTAssertTrue(printBlock.contains("html.print-no-backgrounds h1"))
@@ -203,6 +201,51 @@ final class PrintingTests: XCTestCase {
         XCTAssertTrue(printBlock.contains("th, td {"))
         XCTAssertTrue(printBlock.contains("word-wrap: break-word"))
         XCTAssertTrue(printBlock.contains("white-space: normal"))
+    }
+
+    func testPrintMediaQueriesPreserveThemeColorsInInkSavingMode() throws {
+        let template = try loadTemplate()
+        let printBlock = try printMediaQueryBlock(in: template)
+
+        // Ensure print-no-backgrounds class does not apply universal color: #000000 !important
+        // so that selected theme CSS variables (--h1, --h2, --link, --code-text, --text) apply during print.
+        XCTAssertFalse(printBlock.contains("html.print-no-backgrounds * {\n        -webkit-print-color-adjust: economy !important;\n        print-color-adjust: economy !important;\n        background: transparent !important;\n        background-color: transparent !important;\n        background-image: none !important;\n        /* Avoid light text rendering on white backgrounds */\n        color: #000000 !important;\n    }"))
+        XCTAssertFalse(printBlock.contains("html.print-no-backgrounds a {\n        color: #0969da !important;"))
+    }
+
+    func testPrintMediaQueriesEnforceThemeFontsSizesAndColors() throws {
+        let template = try loadTemplate()
+        let printBlock = try printMediaQueryBlock(in: template)
+
+        // Verify fonts are explicitly bound in @media print
+        XCTAssertTrue(printBlock.contains("var(--body-font) !important"))
+        XCTAssertTrue(printBlock.contains("var(--base-font-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--heading-font) !important"))
+        XCTAssertTrue(printBlock.contains("var(--code-font) !important"))
+        XCTAssertTrue(printBlock.contains("var(--code-font-size) !important"))
+
+        // Verify heading sizes are explicitly bound in @media print
+        XCTAssertTrue(printBlock.contains("var(--h1-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h2-size) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h3-size) !important"))
+
+        // Verify colors are explicitly bound in @media print
+        XCTAssertTrue(printBlock.contains("var(--h1) !important"))
+        XCTAssertTrue(printBlock.contains("var(--h2) !important"))
+        XCTAssertTrue(printBlock.contains("var(--link) !important"))
+        XCTAssertTrue(printBlock.contains("var(--code-text) !important"))
+    }
+
+    func testPrintPrepareScriptForcesLayoutPass() {
+        let script = PrintScriptGenerator.prepareScript(
+            escapedCSS: "body { color: red; }",
+            stripBackgrounds: false,
+            stripImages: false,
+            stripWidth: false,
+            printBorders: false,
+            pagePadding: "0px"
+        )
+        XCTAssertTrue(script.contains("document.body.offsetHeight;"))
     }
 
     // 4. Functional test for PrintCoordinator script building and memory cycles

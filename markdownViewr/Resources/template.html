@@ -421,6 +421,40 @@ mark {
         display: block !important;
         background-color: var(--bg) !important;
         color: var(--text) !important;
+        font-family: var(--body-font) !important;
+        font-size: var(--base-font-size) !important;
+        line-height: var(--line-height) !important;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--heading-font) !important;
+    }
+
+    h1 { color: var(--h1) !important; font-size: var(--h1-size) !important; }
+    h2 { color: var(--h2) !important; font-size: var(--h2-size) !important; }
+    h3 { color: var(--h3) !important; font-size: var(--h3-size) !important; }
+    h4 { color: var(--h4) !important; font-size: var(--h4-size) !important; }
+    h5 { color: var(--h5) !important; font-size: var(--h5-size) !important; }
+    h6 { color: var(--h6) !important; font-size: var(--h6-size) !important; }
+
+    a { color: var(--link) !important; }
+
+    pre { background-color: var(--code-bg) !important; }
+    pre code, code {
+        font-family: var(--code-font) !important;
+        font-size: var(--code-font-size) !important;
+        color: var(--code-text) !important;
+    }
+    code { background-color: var(--code-bg) !important; }
+
+    blockquote {
+        border-left-color: var(--blockquote-border) !important;
+        background-color: var(--blockquote-bg) !important;
+    }
+
+    mark {
+        background-color: var(--highlight-bg) !important;
+        color: var(--highlight-text) !important;
     }
 
     #content {
@@ -454,22 +488,25 @@ mark {
 
     html.print-no-backgrounds, html.print-no-backgrounds body {
         background-color: #ffffff !important;
-        color: #000000 !important;
     }
 
     html.print-no-backgrounds * {
         -webkit-print-color-adjust: economy !important;
         print-color-adjust: economy !important;
+    }
+
+    html.print-no-backgrounds pre,
+    html.print-no-backgrounds code,
+    html.print-no-backgrounds blockquote,
+    html.print-no-backgrounds mark,
+    html.print-no-backgrounds .frontmatter {
         background: transparent !important;
         background-color: transparent !important;
         background-image: none !important;
-        /* Avoid light text rendering on white backgrounds */
-        color: #000000 !important;
     }
 
     /* Maintain link readability in ink-saving mode */
     html.print-no-backgrounds a {
-        color: #0969da !important;
         text-decoration: underline !important;
     }
 
