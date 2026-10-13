@@ -1,5 +1,7 @@
 # markdownViewr
 
+> **This is KofTwentyTwo's contribution fork of [darinkelkhoff/markdownViewr](https://github.com/darinkelkhoff/markdownViewr).** It publishes no builds. The download, Homebrew cask and Sparkle updates below all come from the upstream project. The fork carries printing work that is offered upstream: native printing merged as [darinkelkhoff/markdownViewr#2](https://github.com/darinkelkhoff/markdownViewr/pull/2), and the print-styling fixes are open as [#3](https://github.com/darinkelkhoff/markdownViewr/pull/3). Report app issues upstream. The Windows port is [KofTwentyTwo/MarkdownViewr.Windows](https://github.com/KofTwentyTwo/MarkdownViewr.Windows).
+
 A fast, beautiful markdown viewer for macOS. Open any markdown file — it live-reloads as you edit in your favorite editor.
 
 [![Download](https://img.shields.io/badge/Download-macOS-blue?style=flat-square&logo=apple)](https://github.com/darinkelkhoff/markdownViewr/releases/latest/download/markdownViewr.dmg)
