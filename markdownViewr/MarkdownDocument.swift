@@ -60,7 +60,7 @@ struct MarkdownDocument: FileDocument {
 
         let rawContent = frontmatter != nil ? body : markdown
         let content = preProcessSubscript(rawContent, enabled: extensions.subscript_)
-        let document = Document(parsing: content)
+        let document = Markdown.Document(parsing: content)
         var htmlVisitor = HTMLConverter()
         html += htmlVisitor.visit(document)
         return applyExtensions(html, extensions: extensions)
@@ -127,7 +127,7 @@ struct MarkdownDocument: FileDocument {
     }
 
     private static func renderFrontmatterAsMarkdown(_ yaml: String) -> String {
-        let document = Document(parsing: "---\n\(yaml)\n---")
+        let document = Markdown.Document(parsing: "---\n\(yaml)\n---")
         var htmlVisitor = HTMLConverter()
         return htmlVisitor.visit(document)
     }
@@ -275,7 +275,7 @@ struct MarkdownDocument: FileDocument {
 private struct HTMLConverter: MarkupWalker {
     private var result = ""
 
-    mutating func visit(_ document: Document) -> String {
+    mutating func visit(_ document: Markdown.Document) -> String {
         result = ""
         for child in document.children {
             visitChild(child)

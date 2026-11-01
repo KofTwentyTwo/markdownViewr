@@ -1,0 +1,12 @@
+title = "markdownViewr gitleaks"
+
+[extend]
+useDefault = true
+
+# Sparkle's SUPublicEDKey is the EdDSA *public* verification key, shipped inside the app
+# bundle by design. It is not a credential. Match on the line, not the value, so a changed
+# key or a different secret on any other line is still reported.
+[allowlist]
+description = "Sparkle SUPublicEDKey public verification key"
+regexTarget = "line"
+regexes = ['''SUPublicEDKey''']
