@@ -1,0 +1,16 @@
+name: build
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+jobs:
+  macos:
+    uses: self:KofTwentyTwo/ci-workflows/.gitea/workflows/macos.yaml@v1
+    secrets: inherit
+    with:
+      # Build only: the app and the test bundle are compiled unsigned, the tests are not run. They are
+      # app-hosted XCTests and the grogu runner has no GUI session for testmanagerd; run `just test`
+      # locally before merging (README, Building from Source). Package.swift has no test target.
+      commands: |
+        xcodegen generate
+        xcodebuild -quiet -project markdownViewr.xcodeproj -scheme markdownViewr -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO build-for-testing

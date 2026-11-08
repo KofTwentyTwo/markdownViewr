@@ -275,7 +275,7 @@ struct MarkdownDocument: FileDocument {
 private struct HTMLConverter: MarkupWalker {
     private var result = ""
 
-    mutating func visit(_ document: Document) -> String {
+    mutating func visit(_ document: Markdown.Document) -> String {
         result = ""
         for child in document.children {
             visitChild(child)
