@@ -61,3 +61,12 @@ just run
 ```
 
 `just --list` shows all available recipes.
+
+### Tests
+
+The tests are app-hosted XCTests (`markdownViewrTests`). CI builds the app and the test bundle unsigned
+but does not run them (the CI macOS runner has no GUI session), so run them locally before merging:
+
+```bash
+just test   # xcodegen generate first if the project is stale
+```
